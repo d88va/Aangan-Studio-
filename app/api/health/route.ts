@@ -10,12 +10,12 @@ export async function GET(req: NextRequest) {
   const out: Record<string, unknown> = {
     env: Object.fromEntries(
       [
-        "SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY",
+        "AANGAN_SUPABASE_URL", "AANGAN_SUPABASE_KEY", "SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY",
         "GEMINI_API_KEY", "GEMINI_MODEL", "RESEND_API_KEY", "EMAIL_FROM", "FRONT_DESK_EMAIL",
         "APP_URL", "LINK_SECRET", "HUBSPOT_PRIVATE_APP_TOKEN", "DASHBOARD_PASSWORD",
       ].map((k) => [k, has(k)]),
     ),
-    supabase_url_host: (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/^https?:\/\//, "").slice(0, 40),
+    supabase_url_host: (process.env.AANGAN_SUPABASE_URL ?? process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/^https?:\/\//, "").slice(0, 40),
     service_key_prefix: (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").slice(0, 8),
   };
   try {
