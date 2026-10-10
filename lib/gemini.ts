@@ -43,6 +43,28 @@ Output JSON only, with exactly these keys:
 classification, fit_reason (name the deciding criterion in one sentence), asked_pricing (bool), segment ("home"|"office"|null), name, property_type, area_sqft (number|null), location, scope, timeline, decision_maker, volunteered_budget (only if the caller said it), source (how they heard of us), handoff_note.
 handoff_note: at most 8 short lines for a designer reading on a phone. Plain facts: who, what, where, size, timeline, who decides, open doubts, what was promised. NEVER include any price, rate, per-sq-ft figure, range or estimate of what Aangan would charge. Only repeat a budget if the caller volunteered it, and label it "Caller's budget".`;
 
+const str = { type: "STRING", nullable: true };
+const SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    classification: { type: "STRING", enum: ["qualified", "not_fit", "complaint", "unclear"] },
+    fit_reason: { type: "STRING" },
+    asked_pricing: { type: "BOOLEAN" },
+    segment: { type: "STRING", enum: ["home", "office"], nullable: true },
+    name: str,
+    property_type: str,
+    area_sqft: { type: "NUMBER", nullable: true },
+    location: str,
+    scope: str,
+    timeline: str,
+    decision_maker: str,
+    volunteered_budget: str,
+    source: str,
+    handoff_note: { type: "STRING" },
+  },
+  required: ["classification", "fit_reason", "asked_pricing", "handoff_note"],
+};
+
 // Gemini occasionally returns malformed JSON or a transient error, so try twice before giving up.
 export async function classify(transcript: string, summary?: string, nowIso = new Date().toISOString()) {
   try {
@@ -78,7 +100,7 @@ ${summary ? `\n=== VAANI SUMMARY ===\n${summary}` : ""}`;
     headers: { "content-type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: "application/json", temperature: 0.1 },
+      generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA, temperature: 0.1 },
     }),
   });
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`);
