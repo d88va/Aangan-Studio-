@@ -3,7 +3,11 @@ export const metadata = { title: "Aangan Calls", description: "AI call agent res
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#fafaf8", color: "#1a1a1a" }}>{children}</body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+      </head>
+      <body style={{ margin: 0, background: "#F6F5F1" }}>{children}</body>
     </html>
   );
 }
