@@ -43,7 +43,16 @@ Output JSON only, with exactly these keys:
 classification, fit_reason (name the deciding criterion in one sentence), asked_pricing (bool), segment ("home"|"office"|null), name, property_type, area_sqft (number|null), location, scope, timeline, decision_maker, volunteered_budget (only if the caller said it), source (how they heard of us), handoff_note.
 handoff_note: at most 8 short lines for a designer reading on a phone. Plain facts: who, what, where, size, timeline, who decides, open doubts, what was promised. NEVER include any price, rate, per-sq-ft figure, range or estimate of what Aangan would charge. Only repeat a budget if the caller volunteered it, and label it "Caller's budget".`;
 
+// Gemini occasionally returns malformed JSON or a transient error, so try twice before giving up.
 export async function classify(transcript: string, summary?: string, nowIso = new Date().toISOString()) {
+  try {
+    return await classifyOnce(transcript, summary, nowIso);
+  } catch {
+    return await classifyOnce(transcript, summary, nowIso);
+  }
+}
+
+async function classifyOnce(transcript: string, summary: string | undefined, nowIso: string) {
   const key = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL;
   if (!key || !model) throw new Error("GEMINI_API_KEY / GEMINI_MODEL not set");
