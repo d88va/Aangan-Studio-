@@ -1,0 +1,11 @@
+node_modules
+.next
+.env
+.env.*
+!.env.example
+.vercel
+next-env.d.ts
+*.tsbuildinfo
+# The Cut: pricing is never part of this project
+pricing.md
+**/pricing.md
