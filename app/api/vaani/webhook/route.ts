@@ -114,6 +114,9 @@ export async function POST(req: NextRequest) {
       email_message_id: typeof email === "string" ? email : null,
       hubspot_deal_id: typeof deal === "string" ? deal : null,
     }).eq("id", rowId);
+    if (deal && typeof deal === "object") {
+      await emailFrontDesk(`[Aangan] HubSpot deal failed for ${lead.name ?? caller}`, `${(deal as any).error}\n\n${lead.handoff_note}`).catch(() => {});
+    }
     if (typeof email !== "string") {
       await emailFrontDesk(`[Aangan] Designer email failed for ${lead.name ?? caller}`, `${(email as any)?.error ?? ""}\n\n${lead.handoff_note}`).catch(() => {});
     }

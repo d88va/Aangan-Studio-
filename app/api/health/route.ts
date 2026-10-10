@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
+import { createDeal } from "@/lib/hubspot";
 
 // Diagnostics: reports which settings exist (never their values) and whether the database works.
 export async function GET(req: NextRequest) {
@@ -26,6 +27,18 @@ export async function GET(req: NextRequest) {
     await db().from("calls").delete().eq("vaani_call_id", "health-check");
   } catch (e) {
     out.exception = String(e);
+  }
+  // ?hubspot=test creates one clearly named test deal so the CRM connection can be checked.
+  if (req.nextUrl.searchParams.get("hubspot") === "test") {
+    try {
+      const id = await createDeal(
+        { classification: "qualified", fit_reason: "", asked_pricing: false, segment: "home", name: "Aangan connection test", property_type: "test", area_sqft: null, location: null, scope: null, timeline: null, decision_maker: null, volunteered_budget: null, source: null, handoff_note: "Connection test. Safe to delete." },
+        null,
+      );
+      out.hubspot = id ? { created_deal_id: id } : "no token set";
+    } catch (e) {
+      out.hubspot = { error: String(e) };
+    }
   }
   return NextResponse.json(out);
 }
