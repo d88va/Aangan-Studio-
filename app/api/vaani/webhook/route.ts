@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, classified: false });
   }
 
-  const { data: row } = await db()
+  const { data: row, error: rowErr } = await db()
     .from("calls")
     .upsert(
       {
@@ -92,13 +92,17 @@ export async function POST(req: NextRequest) {
     )
     .select("id")
     .single();
+  if (rowErr || !row) {
+    await emailFrontDesk(`[Aangan] Could not save call ${callId} to the database`, `${rowErr?.message ?? "no row returned"}\n\n${lead.handoff_note}`).catch(() => {});
+  }
   const rowId = row?.id as string;
 
   // Outputs are independent and best-effort.
   if (lead.classification === "qualified") {
     let designerId: string | null = null;
     const email = await (async () => {
-      const { data: ds } = await db().from("designers").select("*").eq("active", true);
+      const { data: ds, error: dsErr } = await db().from("designers").select("*").eq("active", true);
+      if (dsErr) throw new Error(`designers query failed: ${dsErr.message}`);
       const d1 = ds?.find((x) => lead.segment && x.specialties?.includes(lead.segment) && x.email) ?? ds?.find((x) => x.email);
       if (!d1) throw new Error("no active designer with email");
       designerId = d1.id;
