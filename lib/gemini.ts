@@ -84,7 +84,11 @@ ${summary ? `\n=== VAANI SUMMARY ===\n${summary}` : ""}`;
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const j: any = await res.json();
   const text = j?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
-  const lead = JSON.parse(text.replace(/^```json|```$/g, "").trim()) as Lead;
+  let parsed: any = JSON.parse(text.replace(/^```json|```$/g, "").trim());
+  if (Array.isArray(parsed)) parsed = parsed[0];
+  if (parsed?.result && !parsed.classification) parsed = parsed.result;
+  if (!parsed?.classification) throw new Error(`Gemini returned no classification: ${text.slice(0, 200)}`);
+  const lead = parsed as Lead;
 
   const inTok = j?.usageMetadata?.promptTokenCount ?? 0;
   const outTok = j?.usageMetadata?.candidatesTokenCount ?? 0;
